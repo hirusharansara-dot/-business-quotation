@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business Quotation</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #fff9df;
+  color: #222;
+  margin: 0;
+  padding: 15px;
+}
+header {
+  background: #ffd52a;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+.card {
+  background: white;
+  padding: 16px;
+  margin-top: 15px;
+  border-radius: 12px;
+}
+input[type="text"], input[type="number"] {
+  width: 95%;
+  padding: 10px;
+  margin: 6px 0 12px;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+  font-size: 16px;
+}
+.cover {
+  display: block;
+  padding: 9px;
+  background: #fff9df;
+  margin: 7px 0;
+  border-radius: 7px;
+}
+button {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #ffd52a;
+  font-weight: bold;
+  margin: 5px 0;
+  font-size: 15px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+td, th {
+  padding: 9px 4px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+.money { text-align: right; }
+.total {
+  background: #ffe477;
+  font-weight: bold;
+}
+@media print {
+  .form-area, .buttons { display: none; }
+  body { background: white; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h2>BUSINESS INSURANCE</h2>
+  <b>QUOTATION GENERATOR</b>
+</header>
+
+<div class="card form-area">
+  <h3>BUSINESS DETAILS</h3>
+
+  <label>BUSINESS NAME</label>
+  <input id="business" type="text" placeholder="Business name">
+
+  <label>A = VALUE OF BUILDING</label>
+  <input id="A" type="number" value="0" min="0">
+
+  <label>B = VALUE OF STOCK</label>
+  <input id="B" type="number" value="0" min="0">
+
+  <label>C = VALUE OF ELECTRIC ITEMS</label>
+  <input id="C" type="number" value="0" min="0">
+
+  <label>D = VALUE OF GLASSES</label>
+  <input id="D" type="number" value="0" min="0">
+
+  <h3>HEAD = SELECT COVERS</h3>
+
+  <label class="cover">
+    <input type="checkbox" id="fire" checked>
+    E = FIRE
+  </label>
+
+  <label class="cover">
+    <input type="checkbox" id="rcc" checked>
+    F = RCC
+  </label>
+
+  <label class="cover">
+    <input type="checkbox" id="burglary" checked>
+    G = BURGLARY
+  </label>
+
+  <label class="cover">
+    <input type="checkbox" id="electric" checked>
+    H = ELECTRIC ITEMS
+  </label>
+
+  <label class="cover">
+    <input type="checkbox" id="glasses" checked>
+    I = GLASSES
+  </label>
+
+  <label class="cover">
+    <input type="checkbox" id="tc" checked>
+    J = TC
+  </label>
+
+  <div class="buttons">
+    <button onclick="calculate()">CALCULATE QUOTATION</button>
+    <button onclick="window.print()">PRINT / SAVE PDF</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>QUOTATION SUMMARY</h3>
+  <p><b>Business:</b> <span id="businessOut">—</span></p>
+  <p><b>Date:</b> <span id="dateOut"></span></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Cover / Fee</th>
+        <th class="money">Amount (Rs.)</th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+
+  <p><small>Rates calculated using the supplied formulas.</small></p>
+
+  <div class="buttons">
+    <button onclick="window.print()">SAVE QUOTATION AS PDF</button>
+  </div>
+</div>
+
+<script>
+function calculate() {
+  const n = id =>
+    Math.max(0, Number(document.getElementById(id).value) || 0);
+
+  const money = value =>
+    value.toLocaleString("en-LK", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+  const A = n("A");
+  const B = n("B");
+  const C = n("C");
+  const D = n("D");
+
+  const covers = [
+    ["E", "FIRE", ((A+B)/100)*0.3, "fire"],
+    ["F", "RCC", ((A+B)/100)*0.05, "rcc"],
+    ["G", "BURGLARY", ((A+B)/100)*0.175, "burglary"],
+    ["H", "ELECTRIC ITEMS", (C/100)*0.5, "electric"],
+    ["I", "GLASSES", (D/100)*3, "glasses"],
+    ["J", "TC", ((A+B)/100)*0.0375, "tc"]
+  ];
+
+  let sum = 0;
+  let html = "";
+
+  covers.forEach(item => {
+    const [code, name, amount, id] = item;
+
+    if (document.getElementById(id).checked) {
+      sum += amount;
+      html += `<tr>
+        <td>${code}</td>
+        <td>${name}</td>
+        <td class="money">${money(amount)}</td>
+      </tr>`;
+    }
+  });
+
+  const K = (sum/100)*3;
+  const L = 300;
+  const M = (sum/100)*18;
+  const total = sum + K + L + M;
+
+  html += `
+    <tr><td></td><td>Cover Premium Subtotal</td>
+    <td class="money">${money(sum)}</td></tr>
+    <tr><td>K</td><td>ADMIN FE</td>
+    <td class="money">${money(K)}</td></tr>
+    <tr><td>L</td><td>POLICY FE</td>
+    <td class="money">${money(L)}</td></tr>
+    <tr><td>M</td><td>VAT</td>
+    <td class="money">${money(M)}</td></tr>
+    <tr class="total"><td></td><td>TOTAL</td>
+    <td class="money">${money(total)}</td></tr>
+  `;
+
+  document.getElementById("rows").innerHTML = html;
+  document.getElementById("businessOut").textContent =
+    document.getElementById("business").value || "—";
+  document.getElementById("dateOut").textContent =
+    new Date().toLocaleDateString();
+}
+
+document.getElementById("dateOut").textContent =
+  new Date().toLocaleDateString();
+
+calculate();
+</script>
+
+</body>
+</html>
